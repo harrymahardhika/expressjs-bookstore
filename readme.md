@@ -41,4 +41,4 @@
    - **CategoryValidator.js**: Digunakan untuk validasi data terkait kategori atau genre.
    - **PublisherValidator.js**: Menyediakan aturan validasi untuk data terkait penerbit.
 
-Dengan struktur direktori ini, Anda memiliki landasan untuk memahami bagaimana aplikasi JavaScript Anda terorganisir, termasuk komponen-komponen kunci yang digunakan dalam pengelolaan database buku dan informasi terkait. Semoga ini membantu Anda sebagai pemula dalam pemrograman JavaScript!
+Dengan struktur direktori ini, Anda memiliki landasan untuk memahami bagaimana aplikasi JavaScript Anda terorganisir, termasuk komponen-komponen kunci yang digunakan dalam pengelolaan database buku dan informasi terkait.
