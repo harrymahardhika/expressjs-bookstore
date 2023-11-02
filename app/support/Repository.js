@@ -1,4 +1,3 @@
-const mysql = require('mysql2')
 const db = require('../database')
 
 class Repository {
@@ -6,87 +5,67 @@ class Repository {
     this.tableName = tableName
   }
 
-  // Common function to execute a query
-  query(sql, values, callback) {
-    db.query(sql, values, (err, results) => {
-      db.end() // Close the database connection
-      if (err) {
-        callback(err, null)
-      } else {
-        callback(null, results)
-      }
-    })
+  async query(query, params) {
+    const connection = await db.getConnection()
+    try {
+      const [rows] = await connection.execute(query, params)
+      return rows
+    } finally {
+      connection.release()
+    }
   }
 
-  // Common function to handle errors
-  handleError(err, callback) {
-    console.error('Error: ' + err)
-    callback(err, null)
+  async get() {
+    const query = `SELECT * FROM ${this.tableName}`
+    return await this.query(query)
   }
 
-  // Get all records
-  // Get all records
-  getAll(callback) {
-    const sql = `SELECT * FROM ${this.tableName}`
-    this.query(sql, [], (err, results) => {
-      if (err) {
-        this.handleError(err, callback)
-      } else {
-        callback(null, results)
-      }
-    })
+  async find(id) {
+    const query = `SELECT * FROM ${this.tableName} WHERE id = ?`
+    const result = await this.query(query, [id])
+
+    if (result.length === 0) {
+      throw new Error('Data not found')
+    }
+
+    return result[0]
   }
 
-  // Find a record by ID
-  findById(recordId, callback) {
-    const sql = `SELECT * FROM ${this.tableName} WHERE id = ?`
-    this.query(sql, [recordId], (err, results) => {
-      if (err) {
-        this.handleError(err, callback)
-      } else {
-        if (results.length === 0) {
-          callback('Record not found', null)
-        } else {
-          callback(null, results[0])
-        }
-      }
-    })
+  async store(data) {
+    const columns = Object.keys(data)
+    const placeholder = columns.map(() => '?')
+    const values = columns.map((key) => data[key])
+
+    const query = `INSERT INTO ${this.tableName} (${columns.join(', ')})
+      VALUES (${placeholder.join(', ')})`
+
+    return this.query(query, values)
   }
 
-  // Store a new record
-  store(data, callback) {
-    const sql = `INSERT INTO ${this.tableName} SET ?`
-    this.query(sql, data, (err, results) => {
-      if (err) {
-        this.handleError(err, callback)
-      } else {
-        callback(null, results.insertId)
-      }
-    })
+  async update(id, data) {
+    const columns = Object.keys(data)
+    const values = columns.map((key) => data[key])
+    const setClause = columns.map((columnName) => `${columnName} = ?`).join(', ')
+
+    const query = `UPDATE ${this.tableName} SET ${setClause} WHERE id = ${id}`
+    const result = await this.query(query, values)
+
+    if (result.affectedRows === 0) {
+      throw new Error('Data not found')
+    }
+
+    return result
   }
 
-  // Update a record by ID
-  update(recordId, data, callback) {
-    const sql = `UPDATE ${this.tableName} SET ? WHERE id = ?`
-    this.query(sql, [data, recordId], (err, results) => {
-      if (err) {
-        this.handleError(err, callback)
-      } else {
-        callback(null, results.affectedRows > 0)
-      }
-    })
-  }
+  async delete(id) {
+    const query = `DELETE FROM ${this.tableName} WHERE id = ?`
+    const result = await this.query(query, [id])
 
-  // Delete a record by ID
-  delete(recordId, callback) {
-    const sql = `DELETE FROM ${this.tableName} WHERE id = ?`
-    this.query(sql, [recordId], (err, results) => {
-      if (err) {
-        this.handleError(err, callback)
-      } else {
-        callback(null, results.affectedRows > 0)
-      }
-    })
+    if (result.affectedRows === 0) {
+      throw new Error('Data not found')
+    }
+
+    return result
   }
 }
 

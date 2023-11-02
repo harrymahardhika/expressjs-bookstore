@@ -20,13 +20,6 @@ db.query(
 )
 
 db.query(
-  `CREATE TABLE IF NOT EXISTS categories (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL
-  )`
-)
-
-db.query(
   `CREATE TABLE IF NOT EXISTS publishers (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL

@@ -2,30 +2,53 @@ const express = require('express')
 const router = express.Router()
 const Category = require('../repositories/Category')
 const categoryRepository = new Category()
+const CategoryValidator = require('../validators/CategoryValidator')
 
-router.get('/', (req, res) => {
-  categoryRepository.getAll((err, categories) => {
-    if (err) {
-      return res.status(500).json({ error: err })
-    }
+router.get('/', async (req, res) => {
+  try {
+    const categories = await categoryRepository.get()
     res.json(categories)
-  })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
-router.get('/:id', (req, res) => {
-  res.send('Category Details for ID: ' + req.params.id)
+router.get('/:id', async (req, res) => {
+  try {
+    const category = await categoryRepository.find(req.params.id)
+    res.json(category)
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
 })
 
-router.post('/', (req, res) => {
-  res.send('Create Category')
+router.post('/', new CategoryValidator().validate(), async (req, res) => {
+  try {
+    const newCategory = req.body
+    await categoryRepository.store(newCategory)
+    res.status(201).json({ message: 'Category created' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
-router.put('/:id', (req, res) => {
-  res.send('Update Category with ID: ' + req.params.id)
+router.put('/:id', new CategoryValidator().validate(), async (req, res) => {
+  try {
+    const updatedCategory = req.body
+    await categoryRepository.update(req.params.id, updatedCategory)
+    res.json({ message: 'Category updated' })
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
 })
 
-router.delete('/:id', (req, res) => {
-  res.send('Delete Category with ID: ' + req.params.id)
+router.delete('/:id', async (req, res) => {
+  try {
+    await categoryRepository.delete(req.params.id)
+    res.json({ message: 'Category deleted' })
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
 })
 
 module.exports = router

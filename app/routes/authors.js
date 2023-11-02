@@ -2,30 +2,53 @@ const express = require('express')
 const router = express.Router()
 const Author = require('../repositories/Author')
 const authorRepository = new Author()
+const AuthorValidator = require('../validators/AuthorValidator')
 
-router.get('/', (req, res) => {
-  authorRepository.getAll((err, authors) => {
-    if (err) {
-      return res.status(500).json({ error: err })
-    }
+router.get('/', async (req, res) => {
+  try {
+    const authors = await authorRepository.get()
     res.json(authors)
-  })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
-router.get('/:id', (req, res) => {
-  res.send('Author Details for ID: ' + req.params.id)
+router.get('/:id', async (req, res) => {
+  try {
+    const author = await authorRepository.find(req.params.id)
+    res.json(author)
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
 })
 
-router.post('/', (req, res) => {
-  res.send('Create Author')
+router.post('/', new AuthorValidator().validate(), async (req, res) => {
+  try {
+    const newAuthor = req.body
+    await authorRepository.store(newAuthor)
+    res.status(201).json({ message: 'Author created' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
-router.put('/:id', (req, res) => {
-  res.send('Update Author with ID: ' + req.params.id)
+router.put('/:id', new AuthorValidator().validate(), async (req, res) => {
+  try {
+    const updatedAuthor = req.body
+    await authorRepository.update(req.params.id, updatedAuthor)
+    res.json({ message: 'Author updated' })
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
 })
 
-router.delete('/:id', (req, res) => {
-  res.send('Delete Author with ID: ' + req.params.id)
+router.delete('/:id', async (req, res) => {
+  try {
+    await authorRepository.delete(req.params.id)
+    res.json({ message: 'Author deleted' })
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
 })
 
 module.exports = router

@@ -1,10 +1,15 @@
 const express = require('express')
 const router = express.Router()
+const fs = require('fs')
+const path = require('path')
 
-const booksRoutes = require('./routes/books')
-const categoriesRoutes = require('./routes/categories')
+const routesDir = path.join(__dirname, 'routes')
 
-router.use('/books', booksRoutes)
-router.use('/categories', categoriesRoutes)
+fs.readdirSync(routesDir).forEach((file) => {
+  const routePath = path.join(routesDir, file)
+  const route = require(routePath)
+  const routeName = path.basename(file, '.js')
 
+  router.use(`/${routeName}`, route)
+})
 module.exports = router
