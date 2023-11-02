@@ -34,11 +34,11 @@ const migrate = async () => {
     `CREATE TABLE IF NOT EXISTS books (
       id INT PRIMARY KEY AUTO_INCREMENT,
       title VARCHAR(255) NOT NULL,
-      author_id INT,
-      category_id INT,
-      publisher_id INT,
-      published_year INT,
-      isbn VARCHAR(13),
+      author_id INT NOT NULL,
+      category_id INT NOT NULL,
+      publisher_id INT NOT NULL,
+      published_year INT NOT NULL,
+      isbn VARCHAR(13) NOT NULL,
       FOREIGN KEY (author_id) REFERENCES authors(id),
       FOREIGN KEY (category_id) REFERENCES categories(id),
       FOREIGN KEY (publisher_id) REFERENCES publishers(id)
